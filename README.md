@@ -10,8 +10,10 @@ The project combines a real-time STM32G4 bench-top implementation with a Simulin
 **Team Lead: Yu-jin Choi (최유진)** · Team Members: Young-woo Chung (정영우), Ho-jong Kim (김호종)
 
 <p align="center">
-  <img src="assets/system_overview.png" width="820" alt="Bench-top architecture: PC-UART commands enter STM32G474; IHM08M1 drives the MN3110 motor and rotor; AS5047P feeds rotor azimuth back to the controller.">
+  <img src="assets/system_overview.png" width="820" alt="Original system architecture from the thesis, showing command input, rotor-azimuth sensing, torque modulation, the simulated drive controller, and rotor-hinge response.">
 </p>
+
+*Thesis architecture; drive and rotor-response analysis are evaluated in simulation.*
 
 ---
 
@@ -36,13 +38,17 @@ The bench-top system measures absolute rotor azimuth and updates the synchronize
 
 The STM32 firmware processes the rotor-angle measurement and generates the 1/rev modulation command in the following sequence.
 
-<p align="center">
-  <img src="assets/embedded_flow.png" width="540" alt="AS5047P rotor azimuth → encoder zero-offset compensation → 0°/360° boundary handling → phase compensation → 1/rev cosine modulation → motor-drive reference update.">
-</p>
+**AS5047P rotor azimuth → zero-offset compensation → 0°/360° boundary handling → phase compensation → 1/rev cosine modulation → drive-reference update**
 
 The encoder installation offset is compensated in firmware, and the angular boundary is handled so that the modulation phase remains continuous when the rotor passes between 359° and 0°.
 
 Using the corrected rotor azimuth, the drive reference is updated in real time on the STM32G4.
+
+<p align="center">
+  <img src="assets/phase_lut.png" width="500" alt="Original thesis screenshot of the firmware's rotor-speed breakpoints and phase-compensation lookup table.">
+</p>
+
+*Original firmware LUT screenshot from the thesis.*
 
 ---
 
@@ -59,6 +65,8 @@ Because the mechanical response delay changes with rotor speed, the phase-compen
 *Torque-modulation subsystem from the simulation model.*
 
 [Simulink model and supporting files](simulation/) · [Model](simulation/SwashPlateless_ESC.slx) · [Parameters](simulation/Swash.m) · [Sweep script](simulation/Sweep_param.m) · [Phase-sign check](simulation/Check_alpha_sign.m) · [Recorded sweep results](simulation/Swash_Sweep_Results.xlsx)
+
+[Simulink 모델 이론 및 수식 설명](docs/howToWork.md)
 
 *Archived project files for reference; a complete reproduction environment is not bundled.*
 
@@ -104,56 +112,11 @@ The bench test focused on rotor-angle sensing and synchronized command generatio
 
 ---
 
-## My Role
-
-**Yu-jin Choi (최유진) · Team Lead**
-
-- Hardware configuration and bench-top system integration
-- STM32G4 firmware implementation
-- AS5047P rotor-azimuth sensing and angle processing
-- Real-time 1/rev modulation-command generation
-- Simulink-PLECS drive-response analysis
-- Speed-dependent phase-compensation LUT design and validation
-
-## Project
-
-**Drive Response Analysis of Azimuth-Synchronized Torque Modulation for a Swashplateless Rotor**
-
-인하대학교 전기전자종합설계 프로젝트 · 2026  
-Inha University · Department of Electrical and Electronic Engineering
-
-| Role | Name |
-|---|---|
-| Team Lead | 최유진 · Yu-jin Choi |
-| Team Member | 정영우 · Young-woo Chung |
-| Team Member | 김호종 · Ho-jong Kim |
-| Faculty Advisor | 김광기 교수 · Prof. Kwang-ki Kim |
-
-The same project was presented in the **Institute of Control, Robotics and Systems (ICROS) undergraduate paper competition** in 2026.  
 동일 프로젝트로 **제어로봇시스템학회 학부생 논문 경진대회**에 참가했습니다.
 
 <details>
 <summary>Conference poster · 학회 발표 포스터</summary>
 
-The original poster is included as presentation material. The validation scope and simulation results are distinguished in the sections above.
-
 <a href="assets/conference_poster.png"><img src="assets/conference_poster.png" width="820" alt="Original 2026 ICROS conference poster for the Swashplateless rotor project, including the methods, simulation results, and bench-top system."></a>
-
-</details>
-
-<details>
-<summary>Figure sources & acknowledgments</summary>
-
-The figures and reported simulation metrics are based on the team's 2026 Inha University capstone thesis and conference materials.
-
-- **System overview:** simplified adaptation of the thesis system architecture and bench-top description, showing the physical sensing and drive-command path.
-- **Bench setup:** device-photo crop from thesis Figure 7, extracted from the original HWP image.
-- **Embedded flow:** redrawn from the thesis firmware-processing description and checked against the supplied STM32 source.
-- **Simulation model:** original torque-modulation subsystem from thesis Figure 3(c).
-- **Phase tracking:** original commanded-angle/output-direction plot from thesis Figure 10.
-- **Bench validation:** original test photograph from thesis Figure 11.
-- **Conference poster:** original team presentation artwork.
-
-본 과제(결과물)는 2026년도 교육부 및 인천시의 재원으로 인천RISE센터의 지원을 받아 수행된 지역혁신중심 대학지원체계(RISE) COSS의 결과입니다. (2026-RISE-04-009)
 
 </details>
