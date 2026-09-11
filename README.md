@@ -45,10 +45,10 @@ STM32G4에서 측정 방위각에 맞춰 변조 명령을 생성하고, 0°/360�
 **Simulink-PLECS · 변조 진폭 2종 · 명령 위상 0°~330° / 30° 간격**
 
 <p align="center">
-  <img src="assets/phase_tracking.png" width="820" alt="명령 위상에 따른 출력 모멘트 방향 비교">
+  <img src="assets/moment_distribution.png" width="600" alt="두 변조 진폭에서 방위각별 평균 모멘트 크기를 비교한 극좌표 그래프">
 </p>
 
-*0° 명령에서 360° 부근의 점은 작은 음의 위상 오차를 나타냅니다.*
+*방위각별 평균 모멘트 크기 · 파랑: 0.01 N·m / 주황: 0.02 N·m 토크 변조*
 
 | 항목 | 결과 |
 |---|---|

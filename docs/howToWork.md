@@ -45,6 +45,10 @@ i_{q,ref}=\frac{T_{ref}}{K_t},\qquad i_{d,ref}=0,\qquad T_m=K_t i_q
 
 d-q축 전류 오차를 PI 제어하고, 좌표변환과 공통 모드 전압 주입을 거쳐 3상 전압 지령을 만듭니다. PLECS 인버터 회로에서 계산한 상전류가 다시 제어기로 전달됩니다.
 
+<p align="center">
+  <img src="../assets/inverter_model.png" width="850" alt="PLECS의 PWM 생성, 3상 인버터 및 모터 등가 상회로">
+</p>
+
 모터 회전은 토크에서 마찰과 회전 부하를 뺀 값으로 계산합니다.
 
 ```math
@@ -73,13 +77,13 @@ M_{mag}=\sqrt{M_x^2+M_y^2},\qquad
 \phi_{out}=\mathrm{atan2}(M_y,M_x)
 ```
 
-## 4. 위상 추종 결과
+## 4. 모멘트 응답
 
 <p align="center">
-  <img src="../assets/phase_error.png" width="850" alt="명령 위상에 따른 시뮬레이션 위상 오차">
+  <img src="../assets/moment_distribution.png" width="600" alt="방위각별 평균 모멘트 크기를 비교한 극좌표 그래프">
 </p>
 
-변조 진폭 0.01·0.02 N·m에서 각각 12개 명령 위상을 비교했습니다. 오차는 출력 방향과 명령 위상의 차이를 −180°~180° 범위로 환산한 값입니다.
+변조 진폭 0.01 N·m(파랑)과 0.02 N·m(주황)의 결과입니다. 반지름은 평균 모멘트 크기를 나타냅니다.
 
 | 논문의 시뮬레이션 결과 | 값 |
 |---|---|
