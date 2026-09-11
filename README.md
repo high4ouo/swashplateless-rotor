@@ -1,122 +1,76 @@
 # Swashplateless Rotor
 
-### Azimuth-Synchronized Torque Modulation on STM32G4
+**로터 방위각에 동기된 1/rev 토크 변조 및 구동 응답 분석**
 
-A swashplateless rotor project that generates a **1/rev periodic drive command synchronized with rotor azimuth**.
-
-The project combines a real-time STM32G4 bench-top implementation with a Simulink-PLECS drive model for phase-response analysis.
-
-**Inha University · Electrical and Electronic Engineering Capstone Design · 2026**  
-**Team Lead: Yu-jin Choi (최유진)** · Team Members: Young-woo Chung (정영우), Ho-jong Kim (김호종)
+인하대학교 전기전자종합설계 · 2026<br>
+팀장 최유진 · 팀원 정영우, 김호종
 
 <p align="center">
-  <img src="assets/system_overview.png" width="820" alt="Original system architecture from the thesis, showing command input, rotor-azimuth sensing, torque modulation, the simulated drive controller, and rotor-hinge response.">
+  <img src="assets/system_overview.png" width="820" alt="방위각 계측, 토크 변조, 모터 구동 및 로터 힌지의 시스템 구성도">
 </p>
 
-*Thesis architecture; drive and rotor-response analysis are evaluated in simulation.*
+*논문의 전체 구성도. 구동 제어기와 로터 응답의 정량 분석은 시뮬레이션으로 수행했습니다.*
 
----
+## 시스템 구성
 
-## System
-
-The bench-top system measures absolute rotor azimuth and updates the synchronized modulation command in real time.
-
-| Component | Device |
+| 구성 | 장치 |
 |---|---|
-| MCU | STM32G474RE NUCLEO |
-| Motor Driver | X-NUCLEO-IHM08M1 |
-| Motor | T-Motor MN3110 470KV |
-| Rotor Position Sensor | AS5047P Magnetic Absolute Encoder |
+| 제어 보드 | NUCLEO-G474RE |
+| 모터 구동 보드 | X-NUCLEO-IHM08M1 |
+| 모터 | T-Motor MN3110 470KV |
+| 방위각 센서 | AS5047P 절대 엔코더 |
 
 <p align="center">
-  <img src="assets/bench_setup.png" width="440" alt="Physical bench setup with the MN3110 motor, red rotor hub, encoder wiring, stacked control boards, and external power supply.">
+  <img src="assets/bench_setup.png" width="440" alt="모터, 로터 힌지, 센서와 제어 보드를 통합한 시험 장치">
 </p>
 
----
+## 임베디드 구현
 
-## Embedded Implementation
+**방위각 계측 → 영점·각도 경계 보정 → 위상 보정 → 1/rev 명령 갱신**
 
-The STM32 firmware processes the rotor-angle measurement and generates the 1/rev modulation command in the following sequence.
+STM32G4에서 측정 방위각에 맞춰 변조 명령을 생성하고, 0°/360° 경계에서도 위상이 연속되도록 처리했습니다.
 
-**AS5047P rotor azimuth → zero-offset compensation → 0°/360° boundary handling → phase compensation → 1/rev cosine modulation → drive-reference update**
+## 위상 보정
 
-The encoder installation offset is compensated in firmware, and the angular boundary is handled so that the modulation phase remains continuous when the rotor passes between 359° and 0°.
-
-Using the corrected rotor azimuth, the drive reference is updated in real time on the STM32G4.
+회전속도별 LUT를 적용해 구동계와 힌지의 위상 지연을 보상했습니다.
 
 <p align="center">
-  <img src="assets/phase_lut.png" width="500" alt="Original thesis screenshot of the firmware's rotor-speed breakpoints and phase-compensation lookup table.">
+  <img src="assets/simulation_model.png" width="820" alt="속도별 위상 보정 LUT를 포함한 Simulink 토크 변조 모델">
 </p>
 
-*Original firmware LUT screenshot from the thesis.*
+[모델 설명](docs/howToWork.md) · [Simulink 파일](simulation/)
 
----
+## 시뮬레이션 결과
 
-## Phase Compensation
-
-A Simulink-PLECS model was constructed using the MN3110 motor parameters to analyze the response of the azimuth-synchronized periodic command.
-
-Because the mechanical response delay changes with rotor speed, the phase-compensation angle was implemented as a speed-dependent Look-Up Table (LUT).
+**Simulink-PLECS · 변조 진폭 2종 · 명령 위상 0°~330° / 30° 간격**
 
 <p align="center">
-  <img src="assets/simulation_model.png" width="820" alt="Torque-modulation subsystem in the Simulink-PLECS drive model, including the speed-dependent phase-compensation lookup table.">
+  <img src="assets/phase_tracking.png" width="820" alt="명령 위상에 따른 출력 모멘트 방향 비교">
 </p>
 
-*Torque-modulation subsystem from the simulation model.*
+*0° 명령에서 360° 부근의 점은 작은 음의 위상 오차를 나타냅니다.*
 
-[Simulink model and supporting files](simulation/) · [Model](simulation/SwashPlateless_ESC.slx) · [Parameters](simulation/Swash.m) · [Sweep script](simulation/Sweep_param.m) · [Phase-sign check](simulation/Check_alpha_sign.m) · [Recorded sweep results](simulation/Swash_Sweep_Results.xlsx)
-
-[Simulink 모델 이론 및 수식 설명](docs/howToWork.md)
-
-*Archived project files for reference; a complete reproduction environment is not bundled.*
-
----
-
-## Results
-
-**Simulink-PLECS simulation results** — two modulation amplitudes, with 12 commanded phases per amplitude (0° to 330° in 30° steps).
-
-<p align="center">
-  <img src="assets/phase_tracking.png" width="820" alt="Original simulation plot comparing commanded phase and output-moment direction for modulation amplitudes of 0.01 and 0.02 N·m.">
-</p>
-
-*Angles are displayed modulo 360°: the point near 360° at a 0° command represents a small negative phase error.*
-
-| Metric | Result |
+| 항목 | 결과 |
 |---|---|
-| Reference rotor speed | 5200 rpm |
-| Mean rotor speed | ≈ 5230 rpm |
-| Maximum absolute phase error | 4.77° |
-| Modulation amplitude | 2× (0.01 → 0.02 N·m) |
-| Mean output-moment magnitude | 1.99× |
+| 기준 / 평균 회전속도 | 5200 / 약 5230 rpm |
+| 최대 절대 위상 오차 | 4.77° |
+| 변조 진폭 2배 입력 | 평균 모멘트 크기 1.99배 |
 
-In simulation, the output-moment direction followed the commanded phase over the tested full-azimuth sweep.
-
-The maximum absolute phase error was approximately 4.77°, and doubling the modulation amplitude increased the mean output-moment magnitude by approximately 1.99×.
-
----
-
-## Bench-top Validation
+## Bench-top 검증
 
 <p align="center">
-  <img src="assets/bench_validation.png" width="616" alt="Photograph from the physical bench-top test showing the rotor assembly during operation.">
+  <img src="assets/bench_validation.png" width="616" alt="실제 로터 시험 장치의 구동 모습">
 </p>
 
-The STM32G4 controller, motor driver, MN3110 motor, and AS5047P encoder were integrated into a physical bench-top system.
-
-During motor rotation, the following embedded processing path was verified:
-
-**PC-UART command → rotor-azimuth measurement → real-time 1/rev modulation-command generation**
-
-The bench test focused on rotor-angle sensing and synchronized command generation, while quantitative phase-response performance was evaluated separately using the Simulink-PLECS model.
+**PC-UART 명령 입력 → 방위각 계측 → 실시간 변조 명령 생성**을 확인했습니다. 위의 위상 오차와 모멘트 수치는 시뮬레이션 결과입니다.
 
 ---
 
 동일 프로젝트로 **제어로봇시스템학회 학부생 논문 경진대회**에 참가했습니다.
 
 <details>
-<summary>Conference poster · 학회 발표 포스터</summary>
+<summary>학회 발표 포스터</summary>
 
-<a href="assets/conference_poster.png"><img src="assets/conference_poster.png" width="820" alt="Original 2026 ICROS conference poster for the Swashplateless rotor project, including the methods, simulation results, and bench-top system."></a>
+<a href="assets/conference_poster.png"><img src="assets/conference_poster.png" width="820" alt="제어로봇시스템학회 발표 포스터"></a>
 
 </details>
