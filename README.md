@@ -1,76 +1,80 @@
 # Swashplateless Rotor
 
-**로터 방위각에 동기된 1/rev 토크 변조 및 구동 응답 분석**
+**Azimuth-Synchronized Torque Modulation**
 
-인하대학교 전기전자종합설계 · 2026<br>
-팀장 최유진 · 팀원 정영우, 김호종
+Real-time 1/rev command generation with Simulink-PLECS drive-response analysis.
+
+Inha University · Electrical and Electronic Engineering Capstone · 2026<br>
+Team lead: Yu-jin Choi · Members: Young-woo Chung, Ho-jong Kim
 
 <p align="center">
-  <img src="assets/system_overview.png" width="820" alt="방위각 계측, 토크 변조, 모터 구동 및 로터 힌지의 시스템 구성도">
+  <img src="assets/system_overview.png" width="820" alt="System architecture linking azimuth sensing, torque modulation, motor drive, and rotor-hinge response">
 </p>
 
-*논문의 전체 구성도. 구동 제어기와 로터 응답의 정량 분석은 시뮬레이션으로 수행했습니다.*
+*Thesis architecture. Drive-controller and rotor-response performance evaluated in simulation.*
 
-## 시스템 구성
+## System
 
-| 구성 | 장치 |
+| Component | Device |
 |---|---|
-| 제어 보드 | NUCLEO-G474RE |
-| 모터 구동 보드 | X-NUCLEO-IHM08M1 |
-| 모터 | T-Motor MN3110 470KV |
-| 방위각 센서 | AS5047P 절대 엔코더 |
+| Controller | NUCLEO-G474RE |
+| Motor driver | X-NUCLEO-IHM08M1 |
+| Motor | T-Motor MN3110 470KV |
+| Azimuth sensor | AS5047P absolute encoder |
 
 <p align="center">
-  <img src="assets/bench_setup.png" width="440" alt="모터, 로터 힌지, 센서와 제어 보드를 통합한 시험 장치">
+  <img src="assets/bench_setup.png" width="440" alt="Bench setup integrating the motor, rotor hinge, encoder, and control boards">
 </p>
 
-## 임베디드 구현
+## Embedded Implementation
 
-**방위각 계측 → 영점·각도 경계 보정 → 위상 보정 → 1/rev 명령 갱신**
+**Azimuth → offset & wrap correction → phase compensation → 1/rev reference**
 
-STM32G4에서 측정 방위각에 맞춰 변조 명령을 생성하고, 0°/360° 경계에서도 위상이 연속되도록 처리했습니다.
+Continuous modulation phase across the 0°/360° boundary.
 
-## 위상 보정
+## Phase Compensation
 
-회전속도별 LUT를 적용해 구동계와 힌지의 위상 지연을 보상했습니다.
+A speed-dependent lookup table compensates for drive and hinge response lag.
 
 <p align="center">
-  <img src="assets/simulation_model.png" width="820" alt="속도별 위상 보정 LUT를 포함한 Simulink 토크 변조 모델">
+  <img src="assets/simulation_model.png" width="820" alt="Simulink torque-modulation subsystem with a speed-dependent phase-compensation lookup table">
 </p>
 
-[모델 설명](docs/howToWork.md) · [Simulink 파일](simulation/)
+[Model notes](docs/howToWork.md) · [Simulink files](simulation/)
 
-## 시뮬레이션 결과
+## Simulation Results
 
-**Simulink-PLECS · 변조 진폭 2종 · 명령 위상 0°~330° / 30° 간격**
+**Simulink-PLECS · Two modulation amplitudes · 0°–330° phase sweep in 30° steps**
 
 <p align="center">
-  <img src="assets/moment_distribution.png" width="600" alt="두 변조 진폭에서 방위각별 평균 모멘트 크기를 비교한 극좌표 그래프">
+  <img src="assets/moment_distribution.png" width="600" alt="Polar plot comparing mean output-moment magnitude at two torque-modulation amplitudes">
 </p>
 
-*방위각별 평균 모멘트 크기 · 파랑: 0.01 N·m / 주황: 0.02 N·m 토크 변조*
+*Mean moment magnitude by azimuth. Blue: 0.01 N·m; orange: 0.02 N·m torque modulation.*
 
-| 항목 | 결과 |
+| Metric | Result |
 |---|---|
-| 기준 / 평균 회전속도 | 5200 / 약 5230 rpm |
-| 최대 절대 위상 오차 | 4.77° |
-| 변조 진폭 2배 입력 | 평균 모멘트 크기 1.99배 |
+| Reference / mean rotor speed | 5200 / ≈ 5230 rpm |
+| Maximum absolute phase error | 4.77° |
+| Mean moment magnitude at 2× modulation amplitude | 1.99× |
 
-## Bench-top 검증
+## Bench-top Validation
 
 <p align="center">
-  <img src="assets/bench_validation.png" width="616" alt="실제 로터 시험 장치의 구동 모습">
+  <img src="assets/bench_validation.png" width="616" alt="Physical rotor assembly during the bench test">
 </p>
 
-**PC-UART 명령 입력 → 방위각 계측 → 실시간 변조 명령 생성**을 확인했습니다. 위의 위상 오차와 모멘트 수치는 시뮬레이션 결과입니다.
+**PC-UART input → azimuth sensing → real-time modulation commands**
+
+Bench validation covers rotor-angle sensing and synchronized command generation.
 
 ---
 
-동일 프로젝트로 **제어로봇시스템학회 학부생 논문 경진대회**에 참가했습니다.
+Presented at the **2026 ICROS Undergraduate Paper Competition**.
 
 <details>
-<summary>학회 발표 포스터</summary>
+<summary>Conference poster</summary>
 
-<a href="assets/conference_poster.png"><img src="assets/conference_poster.png" width="820" alt="제어로봇시스템학회 발표 포스터"></a>
+<a href="assets/conference_poster.png"><img src="assets/conference_poster.png" width="820" alt="ICROS conference poster"></a>
 
 </details>
