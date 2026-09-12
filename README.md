@@ -1,11 +1,9 @@
 # Swashplateless Rotor
 
-**Azimuth-Synchronized Torque Modulation**
+**로터 방위각에 동기된 1/rev 토크 변조 및 구동 응답 분석**
 
-Real-time 1/rev command generation with Simulink-PLECS drive-response analysis.
-
-Inha University · Electrical and Electronic Engineering Capstone · 2026<br>
-Team lead: Yu-jin Choi · Members: Young-woo Chung, Ho-jong Kim
+인하대학교 전기전자종합설계 · 2026<br>
+팀장 최유진 · 팀원 정영우, 김호종
 
 <p align="center">
   <img src="assets/system_overview.png" width="820" alt="System architecture linking azimuth sensing, torque modulation, motor drive, and rotor-hinge response">
